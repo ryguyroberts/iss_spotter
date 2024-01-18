@@ -54,8 +54,26 @@ const fetchISSFlyOverTimes = (coords, callback) => {
   });
 };
 
-module.exports = {
-  fetchMyIP,
-  fetchCoordsByIP,
-  fetchISSFlyOverTimes
+const nextISSTimesForMyLocation = function(callback) {
+  fetchMyIP((error, ip) => {
+    if (error) {
+      return callback(error, null);
+    }
+    // The nesting nightmare begins callback into fetchCoords
+    fetchCoordsByIP(ip, (error, geoLoc) => {
+      if (error) {
+        return callback(error, null);
+      }
+      // The nest continues callback into FetchISS
+      fetchISSFlyOverTimes(geoLoc, (error, nextPass) => {
+        if (error) {
+          return callback(error, null);
+        }
+        // Retuns the .request data from ISS
+        callback(error, nextPass);
+      });
+    });
+  });
 };
+
+module.exports = { nextISSTimesForMyLocation };

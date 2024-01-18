@@ -1,24 +1,19 @@
-const { fetchMyIP, fetchCoordsByIP, fetchISSFlyOverTimes } = require('./iss');
+const { nextISSTimesForMyLocation } = require('./iss');
 
-fetchMyIP((error, ip) => {
-  if (error) {
-    console.log("It didn't work at the IP fetch stage!" , error);
-    return;
+const printPass = function(passTimes) {
+  for (const pass of passTimes) {
+    const datetime = new Date(0);
+    datetime.setUTCSeconds(pass.risetime);
+    const duration = pass.duration;
+    console.log(`Next pass at ${datetime} for ${duration} seconds!`);
   }
-  // The nesting nightmare begins callback into fetchCoords
-  fetchCoordsByIP(ip, (error, data) => {
-    if (error) {
-      console.log("It didn't work at the FetchCo-ords stage", error);
-    }
-    console.log('Should be geo data', data);
-    // The nest continues callback into FetchISS
-    fetchISSFlyOverTimes(data, (error, data) => {
-      if (error) {
-        console.log("It didn't work at the fetch ISS location stage", error);
-      }
-      // Retuns the .request data from ISS
-      console.log(data);
-    });
-  });
+};
+
+nextISSTimesForMyLocation((error, passTimes) => {
+  if (error) {
+    return console.log("It didn't work!", error);
+  }
+  // success, print out the deets!
+  printPass(passTimes);
 });
 
